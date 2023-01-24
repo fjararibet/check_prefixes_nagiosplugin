@@ -1,6 +1,7 @@
 #!python
 """Nagios plugin to check the number of prefixes received"""
 
+import argparse
 import subprocess as sp
 
 import nagiosplugin
@@ -32,3 +33,22 @@ class Prefixes(nagiosplugin.Resource):
         metric = nagiosplugin.Metric("prefixes", self.prefixes())
         return metric
     
+
+     
+
+@nagiosplugin.guarded
+def main():
+    argp = argparse.ArgumentParser(description=__doc__)
+    argp.add_argument('-w', '--warning', metavar='RANGE', default='',
+                    help='return warning if load is outside RANGE')
+    argp.add_argument('-c', '--critical', metavar='RANGE', default='',
+                    help='return critical if load is outside RANGE')
+
+    args = argp.parse_args()
+    check = nagiosplugin.Check(
+        Prefixes(args),
+        nagiosplugin.ScalarContext('prefixes', args.warning, args.critical))
+    check.main()
+
+if __name__ == '__main__':
+    main()
