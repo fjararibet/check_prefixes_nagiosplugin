@@ -1,7 +1,7 @@
 #!python
 """Nagios plugin to check the number of prefixes received"""
 
-import subprocess
+import subprocess as sp
 
 import nagiosplugin
 
@@ -13,9 +13,22 @@ class Prefixes(nagiosplugin.Resource):
 
     """
 
-    def __init__(self, peer):
-        self.peer = peer
+    def __init__(self, peer_ip):
+        self.peer_ip = peer_ip
 
-    def prefixes():
-        prefixes = 
+    def prefixes(self):
+        bgp_summary = sp.Popen(['sudo vtysh -c "show ip bgp summary"'], stdout=PIPE)
+        peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=PIPE)
+        bgp_summary.stdout.close()
+        prefixes_column = sp.Popen(["awk", "'{print $10}'"], stdin=peer_line, stdout=PIPE)
+        peer_line.stdout.close()
+
+        prefixes = prefixes_column.communicate()[0]
+
+        return prefixes
+    
+    # Returns a Metric nagiosplugin object with the prefixes information
+    def probe(self):
+        metric = nagiosplugin.Metric("prefixes", self.prefixes())
+        return metric
     
