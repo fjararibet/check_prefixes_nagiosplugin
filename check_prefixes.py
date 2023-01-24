@@ -21,12 +21,12 @@ class Prefixes(nagiosplugin.Resource):
         bgp_summary = sp.Popen(['sudo vtysh -c "show ip bgp summary"'], stdout=sp.PIPE)
         peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
         bgp_summary.stdout.close()
-        prefixes_column = sp.Popen(["awk", "'{print $10}'"], stdin=peer_line, stdout=sp.PIPE)
+        prefixes_column = sp.Popen(["awk", "'{print $10}'"], stdin=peer_line.stdout, stdout=sp.PIPE)
         peer_line.stdout.close()
 
-        prefixes = prefixes_column.communicate()[0]
+        prefixes = prefixes_column.stdout.read()
 
-        return prefixes
+        return int(prefixes)
     
     # Returns a Metric nagiosplugin object with the prefixes information
     def probe(self):
@@ -43,10 +43,13 @@ def main():
                     help='return warning if load is outside RANGE')
     argp.add_argument('-c', '--critical', metavar='RANGE', default='',
                     help='return critical if load is outside RANGE')
+    argp.add_argument('-p', '--peer', help='IP of the BGP peer')
+    argp.add_argument('-v', '--verbose', action='count', default=0,
+                    help='increase output verbosity (use up to 3 times)')
 
     args = argp.parse_args()
     check = nagiosplugin.Check(
-        Prefixes(args),
+        Prefixes(args.peer),
         nagiosplugin.ScalarContext('prefixes', args.warning, args.critical))
     check.main()
 
