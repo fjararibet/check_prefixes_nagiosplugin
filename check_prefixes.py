@@ -26,7 +26,7 @@ class Prefixes(nagiosplugin.Resource):
             peer_data = peer_line.stdout.read().split()
             prefixes = peer_data[9]
         except (OSError, IndexError):
-            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received")
+            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")
         
         return int(prefixes)
     
