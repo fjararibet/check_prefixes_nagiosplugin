@@ -18,10 +18,10 @@ class Prefixes(nagiosplugin.Resource):
         self.peer_ip = peer_ip
 
     def prefixes(self):
-        bgp_summary = sp.Popen(['sudo vtysh -c "show ip bgp summary"'], stdout=PIPE)
-        peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=PIPE)
+        bgp_summary = sp.Popen(['sudo vtysh -c "show ip bgp summary"'], stdout=sp.PIPE)
+        peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
         bgp_summary.stdout.close()
-        prefixes_column = sp.Popen(["awk", "'{print $10}'"], stdin=peer_line, stdout=PIPE)
+        prefixes_column = sp.Popen(["awk", "'{print $10}'"], stdin=peer_line, stdout=sp.PIPE)
         peer_line.stdout.close()
 
         prefixes = prefixes_column.communicate()[0]
