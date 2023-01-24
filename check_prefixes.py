@@ -17,7 +17,8 @@ class Prefixes(nagiosplugin.Resource):
         self.peer_ip = peer_ip
 
     def prefixes(self):
-
+        # Runs commmand:
+        # sudo vtysh -c "show ip bgp summary" | grep {$peer_ip}
         try:
             bgp_summary = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
             peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
