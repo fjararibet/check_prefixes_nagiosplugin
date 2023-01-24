@@ -17,9 +17,13 @@ class Prefixes(nagiosplugin.Resource):
         self.peer_ip = peer_ip
 
     def prefixes(self):
-        bgp_summary = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
-        peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
-        bgp_summary.stdout.close()
+
+        try:
+            bgp_summary = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
+            peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
+            bgp_summary.stdout.close()
+        except OSError:
+            raise nagiosplugin.CheckError("Cannot determine number of Prefixes Received")
 
         peer_data = peer_line.stdout.read().split()
         prefixes = peer_data[9]
