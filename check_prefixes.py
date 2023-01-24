@@ -1,5 +1,4 @@
-#!python
-"""Nagios plugin to check the number of prefixes received"""
+#!/home/fjara/bgp_nagiosplugin/venv/bin/python
 
 import argparse
 import subprocess as sp
@@ -18,13 +17,12 @@ class Prefixes(nagiosplugin.Resource):
         self.peer_ip = peer_ip
 
     def prefixes(self):
-        bgp_summary = sp.Popen(['sudo vtysh -c "show ip bgp summary"'], stdout=sp.PIPE)
+        bgp_summary = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
         peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
         bgp_summary.stdout.close()
-        prefixes_column = sp.Popen(["awk", "'{print $10}'"], stdin=peer_line.stdout, stdout=sp.PIPE)
-        peer_line.stdout.close()
 
-        prefixes = prefixes_column.stdout.read()
+        peer_data = peer_line.stdout.read().split()
+        prefixes = peer_data[9]
 
         return int(prefixes)
     
