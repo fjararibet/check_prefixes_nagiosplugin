@@ -21,14 +21,13 @@ class Prefixes(nagiosplugin.Resource):
         # sudo vtysh -c "show ip bgp summary" | grep {$peer_ip}
         try:
             bgp_summary = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
-            peer_line = sp.Popen(["grep", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
+            peer_line = sp.Popen(["grep", "-w", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
             bgp_summary.stdout.close()
             peer_data = peer_line.stdout.read().split()
-        except OSError:
+            prefixes = peer_data[9]
+        except (OSError, IndexError):
             raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received")
-
-        prefixes = peer_data[9]
-
+        
         return int(prefixes)
     
     # Returns a Metric nagiosplugin object with the prefixes information
