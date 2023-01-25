@@ -67,9 +67,11 @@ class Prefixes(nagiosplugin.Resource):
             bgp_summary.stdout.close()
             peer_data = peer_line.stdout.read().split()
             prefixes = peer_data[9]
-        except (OSError, IndexError):
-            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")      
-        
+        except IndexError:
+            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")   
+        except OSError:   
+            raise nagiosplugin.CheckError('''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp summary"'.''')
+            
         return int(prefixes)
     
     # Returns a Metric nagiosplugin object with the prefixes information
