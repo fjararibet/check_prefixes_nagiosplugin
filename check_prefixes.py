@@ -1,9 +1,51 @@
-#!/home/fjara/bgp_nagiosplugin/venv/bin/python
+#!./venv/bin/python
 
 import argparse
 import subprocess as sp
 
 import nagiosplugin
+import mysql.connector
+from mysql.connector import errorcode
+
+
+class DB_bgp():
+    """Manages the connection to MySQL"""
+
+    # gets credentials from a config file
+    def __init__(self, credentials):
+        self.__credentials = credentials
+    
+    def __open(self):
+        try:
+            conn = mysql.connector.connect(**self.__credentials)
+            self.__conn = conn
+            self.__cursor = conn.cursor()
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print("Something is wrong with user name or password")
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                print("Database does not exist")
+            else:
+                print(err)
+
+    # returns the maximun number prefixes received over the last 31 days, given a peer.
+    def max_PfxRcd(self, equipo, peer):
+        sql = '''
+                SELECT MAX(Prefijos) 
+                FROM PfxRcd 
+                WHERE Fecha_Hora > DATE_SUB(CURDATE(),INTERVAL 31 DAY)
+                AND equipo_IP = %s 
+                AND peer_IP = %s
+              '''
+
+        self.__open()
+        self.__cursor.execute(sql, (equipo, peer))
+        result = self.__cursor.fetchall()[0][0]
+
+        self.__cursor.close()
+        self.__conn.close()
+        
+        return result
 
 class Prefixes(nagiosplugin.Resource):
     """Prefixes Received.
@@ -17,7 +59,7 @@ class Prefixes(nagiosplugin.Resource):
         self.peer_ip = peer_ip
 
     def prefixes(self):
-        # Runs commmand:
+
         # sudo vtysh -c "show ip bgp summary" | grep {$peer_ip}
         try:
             bgp_summary = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
@@ -26,7 +68,7 @@ class Prefixes(nagiosplugin.Resource):
             peer_data = peer_line.stdout.read().split()
             prefixes = peer_data[9]
         except (OSError, IndexError):
-            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")
+            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")      
         
         return int(prefixes)
     
