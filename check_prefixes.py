@@ -7,12 +7,13 @@ import nagiosplugin
 import mysql.connector
 from mysql.connector import errorcode
 
+import config
 
 class DB_bgp():
     """Manages the connection to MySQL"""
 
     # gets credentials from a config file
-    def __init__(self, credentials):
+    def __init__(self, credentials = config.credentials):
         self.__credentials = credentials
     
     def __open(self):
@@ -71,7 +72,7 @@ class Prefixes(nagiosplugin.Resource):
             raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")   
         except OSError:   
             raise nagiosplugin.CheckError('''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp summary"'.''')
-            
+
         return int(prefixes)
     
     # Returns a Metric nagiosplugin object with the prefixes information
