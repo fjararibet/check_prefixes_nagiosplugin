@@ -67,13 +67,18 @@ class Prefixes(nagiosplugin.Resource):
             peer_line = sp.Popen(["grep", "-w", self.peer_ip], stdin=bgp_summary.stdout, stdout=sp.PIPE)
             bgp_summary.stdout.close()
             peer_data = peer_line.stdout.read().split()
-            prefixes = peer_data[9]
+            prefixes = int(peer_data[9])
         except IndexError:
             raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")   
         except OSError:   
             raise nagiosplugin.CheckError('''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp summary"'.''')
 
-        return int(prefixes)
+        db = DB_bgp()
+        max_prefixes = db.max_PfxRcd()
+
+        ratio = prefixes / max_prefixes
+        
+        return ratio
     
     # Returns a Metric nagiosplugin object with the prefixes information
     def probe(self):
