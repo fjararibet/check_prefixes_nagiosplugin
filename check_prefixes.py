@@ -7,15 +7,26 @@ import nagiosplugin
 import mysql.connector
 from mysql.connector import errorcode
 
-import config
+import configparser
 
 class DB_bgp():
     """Manages the connection to MySQL"""
 
     # gets credentials from a config file
-    def __init__(self, credentials = config.credentials):
-        self.__credentials = credentials
-    
+    def __init__(self):
+        config = configparser.ConfigParser()
+        try:
+            config.read('config.ini')
+            credentials = config['credentials']
+            self.__credentials = {  'user': credentials['user'],
+                                'password': credentials['password'],
+                                    'host': credentials['host'],
+                                'database': credentials['database'],
+                                }
+        except KeyError:
+            raise nagiosplugin.CheckError(
+                "Cannot connect to database, config file not found or incomplete.")   
+
     def __open(self):
         try:
             conn = mysql.connector.connect(**self.__credentials)
