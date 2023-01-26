@@ -70,7 +70,7 @@ class Prefixes(nagiosplugin.Resource):
             prefixes = int(peer_data[9])
         except IndexError:
             raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")   
-        except OSError:   
+        except Exception:   
             raise nagiosplugin.CheckError('''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp summary"'.''')
 
         db = DB_bgp()
