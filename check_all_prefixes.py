@@ -53,9 +53,9 @@ class Prefixes(nagiosplugin.Resource):
         db = DB_bgp()
         max_prefixes = db.max_PfxRcd(host_ip, peer_ip)
 
-        ratio = prefixes / max_prefixes
+        ratio = prefixes * 100 / max_prefixes
         
-        return ratio * 100
+        return round(ratio, 1)
     
     # Returns a Metric nagiosplugin object with the prefixes information
     def probe(self):
@@ -72,12 +72,18 @@ class Prefixes(nagiosplugin.Resource):
         peers = peers.split('\n', total_neighbors - 1)
 
         metric = []
+        self.__peers_IPs = []
         for line in peers:
             peer_data = line.split()
             peer_ip = peer_data[0]
-            metric += [nagiosplugin.Metric("prefixes proportion", self.prefixes(peer_ip), uom="%")]
+            self.__peers_IPs += [peer_ip]
+            metric += [nagiosplugin.Metric(f"{peer_ip} prefixes proportion", self.prefixes(peer_ip), uom="%")]
 
         return metric
+    
+    def getPeers_IPs(self):
+        self.probe()
+        return self.__peers_IPs
     
 
      
@@ -94,9 +100,11 @@ def main():
                     help='increase output verbosity (use up to 3 times)')
 
     args = argp.parse_args()
-    check = nagiosplugin.Check(
-        Prefixes(),
-        nagiosplugin.ScalarContext("prefixes proportion", args.warning, args.critical))
+    check = nagiosplugin.Check(Prefixes())
+    pfx = Prefixes()
+    for peer in pfx.getPeers_IPs():
+        check.add(
+        nagiosplugin.ScalarContext(f"{peer} prefixes proportion", args.warning, args.critical))
     check.main()
 
 if __name__ == '__main__':
