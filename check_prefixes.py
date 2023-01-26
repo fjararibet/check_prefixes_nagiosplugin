@@ -69,20 +69,38 @@ class Prefixes(nagiosplugin.Resource):
             peer_data = peer_line.stdout.read().split()
             prefixes = int(peer_data[9])
         except IndexError:
-            raise nagiosplugin.CheckError("Cannot determine the number of Prefixes Received, try indicating a peer with -p")   
+            raise nagiosplugin.CheckError(
+                "Cannot determine the number of Prefixes Received, try indicating a peer with -p")   
         except Exception:   
-            raise nagiosplugin.CheckError('''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp summary"'.''')
+            raise nagiosplugin.CheckError(
+                '''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp summary"'.''')
 
+        
+        try:
+            bgp_neighbors = sp.Popen(['sudo', 'vtysh', '-c', "show ip bgp neighbors", self.peer_ip], stdout=sp.PIPE)
+            grep_peer = sp.Popen(['grep', 'Local host:'], stdin=bgp_neighbors.stdout, stdout=sp.PIPE)
+            bgp_neighbors.stdout.close()
+            awk = sp.Popen(['awk', '-F', '[," "]', '{print $3}'] , stdin=grep_peer.stdout, stdout=sp.PIPE)
+            grep_peer.stdout.close()
+            host_ip = awk.stdout.read().strip()
+        except OSError:
+            raise nagiosplugin.CheckError(
+                f'''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp neighbors {self.peer_ip}" "''')
+        except AttributeError:
+            raise nagiosplugin.CheckError(
+                f'''Cannot determine the number of Prefixes Received using 'vtysh -c "show ip bgp neighbors {self.peer_ip},
+                 peer might be out of service." "''')
+        
         db = DB_bgp()
-        max_prefixes = db.max_PfxRcd()
+        max_prefixes = db.max_PfxRcd(host_ip, self.peer_ip)
 
         ratio = prefixes / max_prefixes
         
-        return ratio
+        return ratio * 100
     
     # Returns a Metric nagiosplugin object with the prefixes information
     def probe(self):
-        metric = nagiosplugin.Metric("prefixes", self.prefixes())
+        metric = nagiosplugin.Metric("prefixes proportion", self.prefixes(), uom="%")
         return metric
     
 
@@ -102,7 +120,7 @@ def main():
     args = argp.parse_args()
     check = nagiosplugin.Check(
         Prefixes(args.peer),
-        nagiosplugin.ScalarContext('prefixes', args.warning, args.critical))
+        nagiosplugin.ScalarContext("prefixes proportion", args.warning, args.critical))
     check.main()
 
 if __name__ == '__main__':
