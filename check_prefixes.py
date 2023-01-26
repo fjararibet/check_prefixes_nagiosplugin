@@ -53,9 +53,9 @@ class Prefixes(nagiosplugin.Resource):
         db = DB_bgp()
         max_prefixes = db.max_PfxRcd(host_ip, self.peer_ip)
 
-        ratio = prefixes / max_prefixes
+        ratio = prefixes * 100 / max_prefixes
         
-        return ratio * 100
+        return round(ratio, 1)
     
     # Returns a Metric nagiosplugin object with the prefixes information
     def probe(self):
