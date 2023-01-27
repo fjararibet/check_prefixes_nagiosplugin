@@ -5,6 +5,7 @@ from mysql.connector import errorcode
 import nagiosplugin
 import configparser
 
+
 class DB_bgp():
     """Manages the connection to MySQL"""
 
@@ -14,14 +15,15 @@ class DB_bgp():
         try:
             config.read('config.ini')
             credentials = config['credentials']
-            self.__credentials = {  'user': credentials['user'],
-                                'password': credentials['password'],
-                                    'host': credentials['host'],
-                                'database': credentials['database'],
-                                }
+            self.__credentials = {'user': credentials['user'],
+                                  'password': credentials['password'],
+                                  'host': credentials['host'],
+                                  'database': credentials['database'],
+                                  }
         except KeyError:
             raise nagiosplugin.CheckError(
-                "Cannot connect to database, config file not found or incomplete.")   
+                """Cannot connect to database,
+                 config file not found or incomplete.""")
 
     def __open(self):
         try:
@@ -30,19 +32,21 @@ class DB_bgp():
             self.__cursor = conn.cursor()
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                raise nagiosplugin.CheckError("Something is wrong with user name or password")
+                raise nagiosplugin.CheckError(
+                    "Something is wrong with user name or password")
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
                 raise nagiosplugin.CheckError("Database does not exist")
             else:
                 raise nagiosplugin.CheckError(err)
 
-    # returns the maximun number prefixes received over the last 31 days, given a peer.
+    # returns the maximun number prefixes received over the last 31 days,
+    # given a peer.
     def max_PfxRcd(self, equipo, peer):
         sql = '''
-                SELECT MAX(Prefijos) 
-                FROM PfxRcd 
+                SELECT MAX(Prefijos)
+                FROM PfxRcd
                 WHERE Fecha_Hora > DATE_SUB(CURDATE(),INTERVAL 31 DAY)
-                AND equipo_IP = %s 
+                AND equipo_IP = %s
                 AND peer_IP = %s
               '''
 
@@ -52,5 +56,5 @@ class DB_bgp():
 
         self.__cursor.close()
         self.__conn.close()
-        
+
         return result
