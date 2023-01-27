@@ -33,12 +33,12 @@ class Prefixes(nagiosplugin.Resource):
             prefixes = int(peer_data[9])
         except IndexError:
             raise nagiosplugin.CheckError(
-                '''Cannot determine the number of Prefixes Received,
-                 no peers found.''')
+                "Cannot determine the number of Prefixes Received,"
+                "no peers found.")
         except Exception:
             raise nagiosplugin.CheckError(
-                '''Cannot determine the number of Prefixes Received using
-                 'vtysh -c "show ip bgp summary"'.''')
+                "Cannot determine the number of Prefixes Received using"
+                'vtysh -c "show ip bgp summary"')
 
         try:
             bgp_neighbors = sp.Popen(
@@ -57,13 +57,13 @@ class Prefixes(nagiosplugin.Resource):
             host_ip = awk.stdout.read().strip()
         except OSError:
             raise nagiosplugin.CheckError(
-                f'''Cannot determine the number of Prefixes Received using
-                 'vtysh -c "show ip bgp neighbors {peer_ip}" "''')
+                'Cannot determine the number of Prefixes Received using'
+                f'vtysh -c "show ip bgp neighbors {peer_ip}"')
         except AttributeError:
             raise nagiosplugin.CheckError(
-                f'''Cannot determine the number of Prefixes Received using
-                 'vtysh -c "show ip bgp neighbors {peer_ip},
-                 peer might be out of service." "''')
+                'Cannot determine the number of Prefixes Received using'
+                f'vtysh -c "show ip bgp neighbors {peer_ip},'
+                'peer might be out of service.')
 
         db = DB_bgp()
         max_prefixes = db.max_PfxRcd(host_ip, peer_ip)
@@ -85,8 +85,8 @@ class Prefixes(nagiosplugin.Resource):
         total_neighbors = int(tail.stdout.read())
 
         peers = sp.check_output(
-            f'''sudo vtysh -c "show ip bgp summary"
-            | grep -A {total_neighbors} -w Neighbor | tail -n +2 ''',
+            'sudo vtysh -c "show ip bgp summary"'
+            f' | grep -A {total_neighbors} -w Neighbor | tail -n +2',
             shell=True, text=True)
         peers = peers.split('\n', total_neighbors - 1)
 
