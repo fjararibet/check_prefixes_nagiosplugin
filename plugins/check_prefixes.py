@@ -1,11 +1,11 @@
-#!./venv/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import subprocess as sp
 
 import nagiosplugin
 
-from DB_bgp import DB_bgp
+from .helpers.DB_bgp import DB_bgp
 
 
 class Prefixes(nagiosplugin.Resource):
