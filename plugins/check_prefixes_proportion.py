@@ -39,12 +39,12 @@ class Prefixes(nagiosplugin.Resource):
             prefixes = int(peer_data[9])
         except IndexError:
             raise nagiosplugin.CheckError(
-                'Cannot determine the number of Prefixes Received,'
+                'Cannot determine the number of Prefixes Received, '
                 'try indicating a peer with -p')
         except Exception:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received'
-                '''using 'vtysh -c "show ip bgp summary"''')
+                ''' using 'vtysh -c "show ip bgp summary"' ''')
 
         # Tries to run a command to obtain the IP that the host uses for BGP:
         # sudo vtysh -c "show ip bgp neighbors |
@@ -67,11 +67,11 @@ class Prefixes(nagiosplugin.Resource):
         except OSError:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received using'
-                f'vtysh -c "show ip bgp neighbors {self.peer_ip}"')
+                f' vtysh -c "show ip bgp neighbors {self.peer_ip}"')
         except AttributeError:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received using'
-                f'vtysh -c "show ip bgp neighbors {self.peer_ip},'
+                f' vtysh -c "show ip bgp neighbors {self.peer_ip}",'
                 'peer might be out of service.')
 
         # Compares the prefixes received to the maximun given by the function
