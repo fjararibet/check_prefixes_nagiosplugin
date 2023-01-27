@@ -94,10 +94,6 @@ class Prefixes(nagiosplugin.Resource):
 
         metric = []
         for peer_ip in self.getPeers_IPs():
-
-            if peer_ip in self.__excluded_peers:
-                continue
-
             metric += [
                 nagiosplugin.Metric(
                     f"{peer_ip} prefixes proportion",
@@ -137,6 +133,8 @@ class Prefixes(nagiosplugin.Resource):
         for line in peers:
             peer_data = line.split()
             peer_ip = peer_data[0]
+            if peer_ip in self.__excluded_peers:
+                continue
             self.__peers_IPs += [peer_ip]
 
         return self.__peers_IPs
