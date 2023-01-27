@@ -16,7 +16,9 @@ class Prefixes(nagiosplugin.Resource):
 
     """
 
-    def __init__(self):
+    def __init__(self, excluded_peers, excluded_ASNs):
+        self.__excluded_peers = excluded_peers
+        self.__excluded_ASNs = excluded_ASNs
         self.__bgp_summary = sp.check_output(
             'sudo vtysh -c "show ip bgp summary"', shell=True, text=True)
 
@@ -117,7 +119,11 @@ class Prefixes(nagiosplugin.Resource):
         self.__peers_IPs = []
         for line in peers:
             peer_data = line.split()
+
             peer_ip = peer_data[0]
+            if peer_ip in self.__excluded_peers:
+                continue
+
             self.__peers_IPs += [peer_ip]
             metric += [
                 nagiosplugin.Metric(
@@ -140,13 +146,19 @@ def main():
                       help='return warning if load is outside RANGE')
     argp.add_argument('-c', '--critical', metavar='RANGE', default='',
                       help='return critical if load is outside RANGE')
-    argp.add_argument('-p', '--peer', help='IP of the BGP peer')
+    argp.add_argument('-exp', '--exclude-peer', metavar='IP', action='extend',
+                      nargs='*', help='Excludes a single peer.'
+                      'Can be used multiple times.')
+    argp.add_argument('-exa', '--exclude-asn', metavar='ASN', action='extend',
+                      nargs='*', help='Excludes all peers that match the ASN.'
+                      'Can be used multiple times.')
     argp.add_argument('-v', '--verbose', action='count', default=0,
                       help='increase output verbosity (use up to 3 times)')
 
     args = argp.parse_args()
-    check = nagiosplugin.Check(Prefixes())
-    pfx = Prefixes()
+
+    pfx = Prefixes(args.exclude_peer, args.exclude_asn)
+    check = nagiosplugin.Check(pfx)
     for peer in pfx.getPeers_IPs():
         check.add(
             nagiosplugin.ScalarContext(
