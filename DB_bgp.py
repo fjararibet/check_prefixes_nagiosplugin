@@ -19,6 +19,7 @@ class DB_bgp():
                                   'password': credentials['password'],
                                   'host': credentials['host'],
                                   'database': credentials['database'],
+                                  'port': credentials['port']
                                   }
         except KeyError:
             raise nagiosplugin.CheckError(
