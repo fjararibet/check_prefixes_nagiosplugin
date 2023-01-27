@@ -1,5 +1,3 @@
-#!./venv/bin/python
-
 import mysql.connector
 from mysql.connector import errorcode
 import nagiosplugin
