@@ -37,11 +37,12 @@ class Prefixes(nagiosplugin.Resource):
         except IndexError:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received,'
-                'try indicating a peer with -p')
+                ' try indicating a peer with -p')
         except Exception:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received'
-                ''' using 'vtysh -c "show ip bgp summary"' ''')
+                ''' using 'vtysh -c "show ip bgp summary".' '''
+                ' Use -h for help.')
 
         return prefixes
 

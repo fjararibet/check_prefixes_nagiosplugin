@@ -40,11 +40,12 @@ class Prefixes(nagiosplugin.Resource):
         except IndexError:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received, '
-                'try indicating a peer with -p')
+                ' try indicating a peer with -p')
         except Exception:
             raise nagiosplugin.CheckError(
                 'Cannot determine the number of Prefixes Received'
-                ''' using 'vtysh -c "show ip bgp summary"' ''')
+                ''' using 'vtysh -c "show ip bgp summary".' '''
+                ' Use -h for help.')
 
         # Tries to run a command to obtain the IP that the host uses for BGP:
         # sudo vtysh -c "show ip bgp neighbors |
