@@ -16,7 +16,7 @@ class Prefixes(nagiosplugin.Resource):
 
     """
 
-    def __init__(self, excluded_peers, excluded_ASNs):
+    def __init__(self, excluded_peers=[], excluded_ASNs=[]):
         self.__excluded_peers = excluded_peers
         self.__excluded_ASNs = excluded_ASNs
         self.__bgp_summary = sp.check_output(
@@ -133,7 +133,8 @@ class Prefixes(nagiosplugin.Resource):
         for line in peers:
             peer_data = line.split()
             peer_ip = peer_data[0]
-            if peer_ip in self.__excluded_peers:
+            asn = peer_data[2]
+            if peer_ip in self.__excluded_peers or asn in self.__excluded_ASNs:
                 continue
             self.__peers_IPs += [peer_ip]
 
@@ -148,10 +149,11 @@ def main():
     argp.add_argument('-c', '--critical', metavar='RANGE', default='',
                       help='return critical if load is outside RANGE')
     argp.add_argument('-exp', '--exclude-peer', metavar='IP', action='extend',
-                      nargs='*', help='Excludes a single peer.'
+                      nargs='*', default=[], help='Excludes a single peer.'
                       'Can be used multiple times.')
     argp.add_argument('-exa', '--exclude-asn', metavar='ASN', action='extend',
-                      nargs='*', help='Excludes all peers that match the ASN.'
+                      nargs='*', default=[],
+                      help='Excludes all peers that match the ASN.'
                       'Can be used multiple times.')
     argp.add_argument('-v', '--verbose', action='count', default=0,
                       help='increase output verbosity (use up to 3 times)')
