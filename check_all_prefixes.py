@@ -92,6 +92,24 @@ class Prefixes(nagiosplugin.Resource):
         this is the function used by the nagios plugin library.
         '''
 
+        metric = []
+        for peer_ip in self.getPeers_IPs():
+
+            if peer_ip in self.__excluded_peers:
+                continue
+
+            metric += [
+                nagiosplugin.Metric(
+                    f"{peer_ip} prefixes proportion",
+                    self.prefixes(peer_ip),
+                    uom="%")]
+
+        return metric
+
+    def getPeers_IPs(self):
+        '''Returns all BGP peer's IPs
+        '''
+
         try:
             # Tries to obtain total number of peers
             bgp_summary = sp.Popen(
@@ -115,27 +133,12 @@ class Prefixes(nagiosplugin.Resource):
             raise nagiosplugin.CheckError(
                 'Could not obtain list of peers.')
 
-        metric = []
         self.__peers_IPs = []
         for line in peers:
             peer_data = line.split()
-
             peer_ip = peer_data[0]
-            if peer_ip in self.__excluded_peers:
-                continue
-
             self.__peers_IPs += [peer_ip]
-            metric += [
-                nagiosplugin.Metric(
-                    f"{peer_ip} prefixes proportion",
-                    self.prefixes(peer_ip),
-                    uom="%")]
 
-        return metric
-
-    def getPeers_IPs(self):
-        '''Returns all BGP peer's IPs'''
-        self.probe()
         return self.__peers_IPs
 
 
