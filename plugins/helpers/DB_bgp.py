@@ -11,7 +11,7 @@ class DB_bgp():
     def __init__(self):
         config = configparser.ConfigParser()
         try:
-            config.read('config.ini')
+            config.read('./config.ini')
             credentials = config['credentials']
             self.__credentials = {'user': credentials['user'],
                                   'password': credentials['password'],
