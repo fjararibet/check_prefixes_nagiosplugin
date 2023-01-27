@@ -3,6 +3,8 @@ from mysql.connector import errorcode
 import nagiosplugin
 import configparser
 
+from .config_check import config_check
+
 
 class DB_bgp():
     """Manages the connection to MySQL"""
@@ -11,6 +13,7 @@ class DB_bgp():
     def __init__(self):
         config = configparser.ConfigParser()
         try:
+            config_check()
             config.read('./config.ini')
             credentials = config['credentials']
             self.__credentials = {'user': credentials['user'],
