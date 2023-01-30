@@ -48,33 +48,7 @@ class Prefixes(nagiosplugin.Resource):
                 "Cannot determine the number of Prefixes Received using"
                 'vtysh -c "show ip bgp summary"')
 
-        # Tries to run a command to obtain the IP that the host uses for BGP:
-        # sudo vtysh -c "show ip bgp neighbors |
-        #  grep 'Local host:' | awk -F '[," "]' '{print $3}'
-        try:
-            bgp_neighbors = sp.Popen(
-                ['sudo', 'vtysh', '-c', "show ip bgp neighbors", peer_ip],
-                stdout=sp.PIPE)
-            grep_peer = sp.Popen(['grep', 'Local host:'],
-                                 stdin=bgp_neighbors.stdout, stdout=sp.PIPE)
-            bgp_neighbors.stdout.close()
-            awk = sp.Popen(['awk',
-                            '-F',
-                            '[," "]',
-                            '{print $3}'],
-                           stdin=grep_peer.stdout,
-                           stdout=sp.PIPE)
-            grep_peer.stdout.close()
-            host_ip = awk.stdout.read().strip()
-        except OSError:
-            raise nagiosplugin.CheckError(
-                'Cannot determine the number of Prefixes Received using'
-                f'vtysh -c "show ip bgp neighbors {peer_ip}"')
-        except AttributeError:
-            raise nagiosplugin.CheckError(
-                'Cannot determine the number of Prefixes Received using'
-                f'vtysh -c "show ip bgp neighbors {peer_ip},'
-                'peer might be out of service.')
+        host_ip = self.retrieveHostIP(peer_ip)
 
         # Compares the prefixes received to the maximun given by the functi
         db = DB_bgp()
@@ -139,6 +113,37 @@ class Prefixes(nagiosplugin.Resource):
             self.__peers_IPs += [peer_ip]
 
         return self.__peers_IPs
+
+    def retrieveHostIP(self, peer_ip):
+        # Tries to run a command to obtain the IP that the host uses for BGP:
+        # sudo vtysh -c "show ip bgp neighbors |
+        #  grep 'Local host:' | awk -F '[," "]' '{print $3}'
+        try:
+            bgp_neighbors = sp.Popen(
+                ['sudo', 'vtysh', '-c', "show ip bgp neighbors", peer_ip],
+                stdout=sp.PIPE)
+            grep_peer = sp.Popen(['grep', 'Local host:'],
+                                 stdin=bgp_neighbors.stdout, stdout=sp.PIPE)
+            bgp_neighbors.stdout.close()
+            awk = sp.Popen(['awk',
+                            '-F',
+                            '[," "]',
+                            '{print $3}'],
+                           stdin=grep_peer.stdout,
+                           stdout=sp.PIPE)
+            grep_peer.stdout.close()
+            host_ip = awk.stdout.read().strip()
+        except OSError:
+            raise nagiosplugin.CheckError(
+                'Cannot determine the number of Prefixes Received using'
+                f'vtysh -c "show ip bgp neighbors {peer_ip}"')
+        except AttributeError:
+            raise nagiosplugin.CheckError(
+                'Cannot determine the number of Prefixes Received using'
+                f'vtysh -c "show ip bgp neighbors {peer_ip},'
+                'peer might be out of service.')
+
+        return host_ip
 
 
 @nagiosplugin.guarded
