@@ -19,16 +19,32 @@ class Prefixes(nagiosplugin.Resource):
     def __init__(self, peer_ip):
         self.peer_ip = peer_ip
 
-    def prefixes(self):
-        '''Prefixes Received.
+    def prefixesProportion(self):
+        '''Proportion of Prefixes Received.
 
         Returns the ratio between the prefixes received
         and the maximun received from the peer indicated.
         '''
 
-        # Tries to run this command to obtain
-        # the prefixes received from the peer:
-        # sudo vtysh -c "show ip bgp summary" | grep {peer_ip}
+        prefixes = self.prefixes()
+        host_ip = self.retrieveHostIP()
+
+        # Compares the prefixes received to the maximun given by the function
+        db = DB_bgp()
+        max_prefixes = db.max_PfxRcd(host_ip, self.peer_ip)
+
+        ratio = prefixes * 100 / max_prefixes
+
+        return round(ratio, 1)
+
+    def prefixes(self):
+        '''Retrieve number of prefixes.
+
+        Tries to run this command to obtain
+        the prefixes received from the peer:
+        sudo vtysh -c "show ip bgp summary" | grep {peer_ip}
+        '''
+
         try:
             bgp_summary = sp.Popen(
                 ['sudo', 'vtysh', '-c', "show ip bgp summary"], stdout=sp.PIPE)
@@ -47,30 +63,16 @@ class Prefixes(nagiosplugin.Resource):
                 ''' using 'vtysh -c "show ip bgp summary".' '''
                 ' Use -h for help.')
 
-        host_ip = self.retrieveHostIP(self.peer_ip)
+        return prefixes
 
-        # Compares the prefixes received to the maximun given by the function
-        db = DB_bgp()
-        max_prefixes = db.max_PfxRcd(host_ip, self.peer_ip)
+    def retrieveHostIP(self):
+        '''Returns the host's BGP address.
 
-        ratio = prefixes * 100 / max_prefixes
-
-        return round(ratio, 1)
-
-    def probe(self):
-        '''Nagios plugin probe function.
-
-        Returns a Metric nagiosplugin object with the prefixes information,
-        this is the function used by the nagios plugin library.
+        Tries to run a command to obtain the IP that the host uses for BGP:
+        sudo vtysh -c "show ip bgp neighbors |
+        grep 'Local host:' | awk -F '[," "]' '{print $3}'
         '''
-        metric = nagiosplugin.Metric(
-            "prefixes proportion", self.prefixes(), uom="%")
-        return metric
 
-    def retrieveHostIP(self, peer_ip):
-        # Tries to run a command to obtain the IP that the host uses for BGP:
-        # sudo vtysh -c "show ip bgp neighbors |
-        #  grep 'Local host:' | awk -F '[," "]' '{print $3}'
         try:
             bgp_neighbors = sp.Popen(
                 ['sudo', 'vtysh', '-c', "show ip bgp neighbors",
@@ -97,6 +99,16 @@ class Prefixes(nagiosplugin.Resource):
                 'peer might be out of service.')
 
         return host_ip
+
+    def probe(self):
+        '''Nagios plugin probe function.
+
+        Returns a Metric nagiosplugin object with the prefixes information,
+        this is the function used by the nagios plugin library.
+        '''
+        metric = nagiosplugin.Metric(
+            "prefixes proportion", self.prefixesProportion(), uom="%")
+        return metric
 
 
 @nagiosplugin.guarded
