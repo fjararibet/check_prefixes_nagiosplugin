@@ -32,7 +32,7 @@ class Prefixes(nagiosplugin.Resource):
         prefixes = self.prefixes(peer_ip)
         host_ip = self.retrieveHostIP(peer_ip)
 
-        # Compares the prefixes received to the maximun given by the functi
+        # Compares the prefixes received to the maximun given by the function
         db = DB_bgp()
         max_prefixes = db.max_PfxRcd(host_ip, peer_ip)
 
