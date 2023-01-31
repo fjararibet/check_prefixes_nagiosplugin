@@ -17,7 +17,7 @@ Opciones:
                         
 # check_prefixes_proportion.py
 
-Plugin para nagios para monitorear la proporción (en porcentaje) de prefijos con respecto al máximo del último mes encontrado en la base de datos. 
+Plugin para nagios para monitorear la proporción (en porcentaje) de prefijos con respecto al máximo del último mes encontrado en la base de datos.  
 Opciones:  
 `-h, --help`            muestra ayuda.  
  `-w RANGE, --warning RANGE` 
@@ -27,7 +27,7 @@ Opciones:
 
 # check_all_prefixes.py
 
-Plugin para nagios para monitorear la proporción (en porcentaje) de prefijos con respecto al máximo del último mes encontrado en la base de datos. 
+Plugin para nagios para monitorear la proporción (en porcentaje) de prefijos con respecto al máximo del último mes encontrado en la base de datos.  
 Opciones:  
 `-h, --help`            muestra ayuda.  
  `-w RANGE, --warning RANGE` 
