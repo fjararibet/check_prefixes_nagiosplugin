@@ -161,9 +161,11 @@ class Prefixes(nagiosplugin.Resource):
 def main():
     argp = argparse.ArgumentParser(description=__doc__)
     argp.add_argument('-w', '--warning', metavar='RANGE', default='',
-                      help='return warning if load is outside RANGE')
+                      help='return warning if prefixes'
+                      'is outside RANGE (0-100)')
     argp.add_argument('-c', '--critical', metavar='RANGE', default='',
-                      help='return critical if load is outside RANGE')
+                      help='return critical if prefixes'
+                      'is outside RANGE (0-100)')
     argp.add_argument('-exp', '--exclude-peer', metavar='IP', action='extend',
                       nargs='*', default=[], help='Excludes a single peer.'
                       'Can be used multiple times.')
@@ -171,8 +173,6 @@ def main():
                       nargs='*', default=[],
                       help='Excludes all peers that match the ASN.'
                       'Can be used multiple times.')
-    argp.add_argument('-v', '--verbose', action='count', default=0,
-                      help='increase output verbosity (use up to 3 times)')
 
     args = argp.parse_args()
 
